@@ -1,0 +1,19 @@
+
+server:
+  port: ${port:8080}
+
+logging:
+  level:
+    org.springframework.web: WARN
+    com.ote.test: TRACE
+
+spring:
+  datasource:
+    url: jdbc:sqlite:./src/main/resources/person_db.sqlite
+    driver-class-name: org.sqlite.JDBC
+  jpa:
+    show-sql: true
+    database-platform: com.sqlite.SQLiteDialect
+    hibernate:
+      naming.physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+
