@@ -1,14 +1,14 @@
 package com.ote.test.controller;
 
 import com.ote.test.aop.Traceable;
-import com.ote.test.model.Clause;
 import com.ote.test.model.Person;
+import com.ote.test.model.PersonParameter;
 import com.ote.test.service.persistence.IPersonPersistenceService;
 import com.ote.test.service.persistence.IPersonPersistenceService.Status;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,28 +17,21 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/person")
+@Slf4j
 public class PersonController {
 
     @Autowired
     private IPersonPersistenceService personPersistenceService;
 
-
-
-    @RequestMapping(method = RequestMethod.POST)
-    public void test(Specification spec) {
-
-        System.out.println(spec);
-    }
-
-
-
     @Traceable
-    @RequestMapping(method = RequestMethod.GET, params = {"sortingBy", "sortingDirection"})
-    public ResponseEntity<Page<Person>> getAll(@RequestParam(name = "sortingBy", required = false, defaultValue = "id") String sortingBy,
-                                               @RequestParam(name = "sortingDirection", required = false, defaultValue = "ASC") String sortingDirection,
+    @RequestMapping(method = RequestMethod.GET)
+
+    public ResponseEntity<Page<Person>> getAll(PersonParameter parameter,
                                                Pageable pageRequest) {
 
-        Optional<Page<Person>> persons = personPersistenceService.findAll(sortingBy, sortingDirection, pageRequest);
+        log.info(pageRequest.toString());
+
+        Optional<Page<Person>> persons = personPersistenceService.findAll(parameter, pageRequest);
         HttpStatus status = persons.isPresent() ? HttpStatus.FOUND : HttpStatus.NOT_FOUND;
         return new ResponseEntity<>(persons.orElse(null), status);
     }

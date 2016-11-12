@@ -1,6 +1,7 @@
 package com.ote.test.service.persistence;
 
 import com.ote.test.model.Person;
+import com.ote.test.model.PersonParameter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -10,7 +11,7 @@ public interface IPersonPersistenceService {
 
     Optional<Person> findOne(Integer id);
 
-    Optional<Page<Person>> findAll(String sortingBy, String sortingDirection, Pageable pageRequest);
+    Optional<Page<Person>> findAll(PersonParameter parameter, Pageable pageRequest);
 
     Status createOrUpdate(Optional<Integer> id, Person person);
 

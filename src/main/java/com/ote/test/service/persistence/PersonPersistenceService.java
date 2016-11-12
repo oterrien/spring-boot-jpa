@@ -1,20 +1,30 @@
 package com.ote.test.service.persistence;
 
 import com.ote.test.model.Person;
+import com.ote.test.model.PersonParameter;
 import com.ote.test.service.persistence.repository.IPersonRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.util.Optional;
+
+import static org.springframework.data.jpa.domain.Specifications.where;
 
 @Service
 @Transactional(readOnly = true)
+@Slf4j
 public class PersonPersistenceService implements IPersonPersistenceService {
 
     @Autowired
@@ -31,24 +41,13 @@ public class PersonPersistenceService implements IPersonPersistenceService {
     }
 
     @Override
-    public Optional<Page<Person>> findAll(String propertyToBeSorted, String sortingDirection, Pageable pageRequest) {
+    public Optional<Page<Person>> findAll(PersonParameter parameter, Pageable pageRequest) {
 
-        Sort.Direction direction = Sort.Direction.valueOf(sortingDirection.toUpperCase());
+        log.info("Find All with parameter " + parameter);
 
-        Sort.Order orderByPropertyAndDirection = new Sort.Order(direction, propertyToBeSorted);
-        Sort.Order orderByPrimaryKeyAsc = new Sort.Order(Sort.Direction.ASC, "id");
+        Pageable pageable = new PageRequest(pageRequest.getPageNumber(), pageRequest.getPageSize(), parameter.sort());
 
-        Sort sort;
-
-        if ("id".equalsIgnoreCase(propertyToBeSorted) && direction == Sort.Direction.ASC){
-            sort = new Sort(orderByPrimaryKeyAsc);
-        } else {
-            sort = new Sort(orderByPropertyAndDirection, orderByPrimaryKeyAsc);
-        }
-
-        Pageable pageable = new PageRequest(pageRequest.getPageNumber(), pageRequest.getPageSize(), sort);
-
-        Page<Person> persons = personRepository.findAll(pageable);
+        Page<Person> persons = personRepository.findAll(parameter.filter(), pageable);
 
         return persons.getNumberOfElements() == 0 ?
                 Optional.empty() :
