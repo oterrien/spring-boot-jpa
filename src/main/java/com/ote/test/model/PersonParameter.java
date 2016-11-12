@@ -19,7 +19,6 @@ public class PersonParameter {
     private String firstName;
     private String lastName;
 
-
     public Sort sort() {
 
         Sort.Order orderByPrimaryKeyAsc = new Sort.Order(Sort.Direction.ASC, "id");

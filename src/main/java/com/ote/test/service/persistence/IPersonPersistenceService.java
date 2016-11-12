@@ -11,6 +11,8 @@ public interface IPersonPersistenceService {
 
     Optional<Person> findOne(Integer id);
 
+    Optional<Page<Person>> findAll(Pageable pageRequest);
+
     Optional<Page<Person>> findAll(PersonParameter parameter, Pageable pageRequest);
 
     Status createOrUpdate(Optional<Integer> id, Person person);

@@ -1,5 +1,6 @@
 package com.ote.test.service.persistence;
 
+import com.ote.test.aop.Counter;
 import com.ote.test.model.Person;
 import com.ote.test.model.PersonParameter;
 import com.ote.test.service.persistence.repository.IPersonRepository;
@@ -41,9 +42,19 @@ public class PersonPersistenceService implements IPersonPersistenceService {
     }
 
     @Override
+    public Optional<Page<Person>> findAll(Pageable pageRequest) {
+
+        Page<Person> persons = personRepository.findAll(pageRequest);
+
+        return persons.getNumberOfElements() == 0 ?
+                Optional.empty() :
+                Optional.of(persons);
+    }
+
+    @Override
     public Optional<Page<Person>> findAll(PersonParameter parameter, Pageable pageRequest) {
 
-        log.info("Find All with parameter " + parameter);
+        log.info(String.format("####-%d-Find All with parameter %s with pageRequest %s", Counter.nextValue(), parameter.toString(), pageRequest.toString()));
 
         Pageable pageable = new PageRequest(pageRequest.getPageNumber(), pageRequest.getPageSize(), parameter.sort());
 

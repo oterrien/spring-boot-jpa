@@ -13,8 +13,6 @@ import java.util.concurrent.atomic.AtomicLong;
 @Aspect
 public class TraceableAspect {
 
-    private static final AtomicLong COUNT = new AtomicLong(0);
-
     @Around("execution(* *(..)) && @annotation(com.ote.test.aop.Traceable)")
     public Object execute(ProceedingJoinPoint point) throws Throwable {
 
@@ -33,7 +31,7 @@ public class TraceableAspect {
 
     private Object executeWithTrace(ProceedingJoinPoint point, Logger logger, Traceable.Level level) throws Throwable {
         long start = System.currentTimeMillis();
-        long count = COUNT.getAndIncrement();
+        long count = Counter.nextValue();
         String methodName = point.getSignature().getName();
 
         try {

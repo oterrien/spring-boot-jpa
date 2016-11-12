@@ -7,8 +7,10 @@ import org.springframework.context.annotation.Profile;
 
 import javax.annotation.PostConstruct;
 
-@Profile({"with-aop", "with-trace"})
+
+@Profile("with-trace-aop")
 @Configuration
+@EnableAspectJAutoProxy(proxyTargetClass = true)
 public class TraceableConfiguration extends TraceableAspect {
 
     @PostConstruct

@@ -25,13 +25,13 @@ public class PersonController {
 
     @Traceable
     @RequestMapping(method = RequestMethod.GET)
-
     public ResponseEntity<Page<Person>> getAll(PersonParameter parameter,
                                                Pageable pageRequest) {
 
         log.info(pageRequest.toString());
 
         Optional<Page<Person>> persons = personPersistenceService.findAll(parameter, pageRequest);
+        //Optional<Page<Person>> persons = personPersistenceService.findAll(pageRequest);
         HttpStatus status = persons.isPresent() ? HttpStatus.FOUND : HttpStatus.NOT_FOUND;
         return new ResponseEntity<>(persons.orElse(null), status);
     }
@@ -84,11 +84,35 @@ public class PersonController {
     }
 
     @Traceable
-    @RequestMapping(method = RequestMethod.PUT)
-    public ResponseEntity<Person> createOrUpdate(@RequestParam(name = "id", required = false) Integer id,
+    @RequestMapping(method = RequestMethod.PUT, value = "/{id}")
+    public ResponseEntity<Person> update(@PathVariable(name = "id") Integer id,
                                                  @RequestBody Person person) {
 
-        Status status = personPersistenceService.createOrUpdate(Optional.ofNullable(id), person);
+        //Status status = personPersistenceService.createOrUpdate(Optional.ofNullable(id), person);
+        person.setId(id);
+        Status status = personPersistenceService.update(person);
+
+        HttpStatus httpStatus;
+
+        switch (status) {
+            case CREATED:
+                httpStatus = HttpStatus.CREATED;
+                break;
+            case UPDATED:
+                httpStatus = HttpStatus.OK;
+                break;
+            default:
+                httpStatus = HttpStatus.BAD_REQUEST;
+        }
+
+        return new ResponseEntity<>(person, httpStatus);
+    }
+
+    @Traceable
+    @RequestMapping(method = RequestMethod.PUT)
+    public ResponseEntity<Person> create(@RequestBody Person person) {
+
+        Status status = personPersistenceService.create(person);
 
         HttpStatus httpStatus;
 
