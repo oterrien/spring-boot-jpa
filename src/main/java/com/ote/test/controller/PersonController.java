@@ -10,10 +10,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @RestController
 @RequestMapping("/person")
@@ -24,7 +26,9 @@ public class PersonController {
     private IPersonPersistenceService personPersistenceService;
 
     @Traceable
-    @RequestMapping(method = RequestMethod.GET)
+    @RequestMapping(method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
     public ResponseEntity<Page<Person>> getAll(PersonParameter parameter,
                                                Pageable pageRequest) {
 
@@ -32,36 +36,40 @@ public class PersonController {
 
         Optional<Page<Person>> persons = personPersistenceService.findAll(parameter, pageRequest);
         //Optional<Page<Person>> persons = personPersistenceService.findAll(pageRequest);
-        HttpStatus status = persons.isPresent() ? HttpStatus.FOUND : HttpStatus.NOT_FOUND;
-        return new ResponseEntity<>(persons.orElse(null), status);
+
+        return persons.isPresent() ?
+                new ResponseEntity<>(persons.get(), HttpStatus.FOUND) :
+                new ResponseEntity<>((Page<Person>) null, HttpStatus.NOT_FOUND);
     }
 
     @Traceable
-    @RequestMapping(method = RequestMethod.GET, value = "/{id}")
+    @RequestMapping(method = RequestMethod.GET,
+            value = "/{id}",
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
     public ResponseEntity<Person> get(@PathVariable(name = "id") Integer id) {
 
         Optional<Person> person = personPersistenceService.findOne(id);
-        HttpStatus status = person.isPresent() ? HttpStatus.FOUND : HttpStatus.NOT_FOUND;
-        return new ResponseEntity<>(person.orElse(null), status);
+
+        return person.isPresent() ?
+                new ResponseEntity<>(person.get(), HttpStatus.FOUND) :
+                new ResponseEntity<>((Person) null, HttpStatus.NOT_FOUND);
+
     }
 
     @Traceable
-    @RequestMapping(method = RequestMethod.DELETE, value = "/{id}")
+    @RequestMapping(method = RequestMethod.DELETE, value = "/{id}",
+            consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> delete(@PathVariable(name = "id") Integer id) {
 
         Status status = personPersistenceService.delete(id);
 
-        HttpStatus httpStatus;
-
         switch (status) {
             case DELETED:
-                httpStatus = HttpStatus.NO_CONTENT;
-                break;
+                return new ResponseEntity<>((Void) null, HttpStatus.NO_CONTENT);
             default:
-                httpStatus = HttpStatus.NOT_FOUND;
+                return new ResponseEntity<>((Void) null, HttpStatus.NOT_FOUND);
         }
-
-        return new ResponseEntity<>((Void) null, httpStatus);
     }
 
     @Traceable
@@ -70,85 +78,72 @@ public class PersonController {
 
         Status status = personPersistenceService.deleteAll();
 
-        HttpStatus httpStatus;
-
         switch (status) {
             case DELETED:
-                httpStatus = HttpStatus.NO_CONTENT;
-                break;
+                return new ResponseEntity<>((Void) null, HttpStatus.NO_CONTENT);
             default:
-                httpStatus = HttpStatus.NOT_FOUND;
-        }
-
-        return new ResponseEntity<>((Void) null, httpStatus);
-    }
+                return new ResponseEntity<>((Void) null, HttpStatus.NOT_FOUND);
+        }    }
 
     @Traceable
-    @RequestMapping(method = RequestMethod.PUT, value = "/{id}")
+    @RequestMapping(method = RequestMethod.PUT, value = "/{id}",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
     public ResponseEntity<Person> update(@PathVariable(name = "id") Integer id,
-                                                 @RequestBody Person person) {
+                                         @RequestBody Person person) {
 
-        //Status status = personPersistenceService.createOrUpdate(Optional.ofNullable(id), person);
         person.setId(id);
-        Status status = personPersistenceService.update(person);
+        IPersonPersistenceService.Result result = personPersistenceService.update(person);
 
-        HttpStatus httpStatus;
-
-        switch (status) {
-            case CREATED:
-                httpStatus = HttpStatus.CREATED;
-                break;
+        switch (result.getStatus()) {
             case UPDATED:
-                httpStatus = HttpStatus.OK;
-                break;
+                return new ResponseEntity<>(result.getPerson(), HttpStatus.OK);
+            case NOT_FOUND:
+                return new ResponseEntity<>((Person) null, HttpStatus.NOT_FOUND);
             default:
-                httpStatus = HttpStatus.BAD_REQUEST;
+                return new ResponseEntity<>((Person) null, HttpStatus.BAD_REQUEST);
         }
-
-        return new ResponseEntity<>(person, httpStatus);
     }
 
     @Traceable
-    @RequestMapping(method = RequestMethod.PUT)
+    @RequestMapping(method = RequestMethod.PUT,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
     public ResponseEntity<Person> create(@RequestBody Person person) {
 
-        Status status = personPersistenceService.create(person);
+        person.setId(null);
+        IPersonPersistenceService.Result result = personPersistenceService.create(person);
 
-        HttpStatus httpStatus;
-
-        switch (status) {
+        switch (result.getStatus()) {
             case CREATED:
-                httpStatus = HttpStatus.CREATED;
-                break;
-            case UPDATED:
-                httpStatus = HttpStatus.OK;
-                break;
+                return new ResponseEntity<>(result.getPerson(), HttpStatus.CREATED);
             default:
-                httpStatus = HttpStatus.BAD_REQUEST;
+                return new ResponseEntity<>((Person) null, HttpStatus.BAD_REQUEST);
         }
 
-        return new ResponseEntity<>(person, httpStatus);
+
     }
 
     @Traceable
-    @RequestMapping(method = RequestMethod.PATCH, value = "/{id}")
-    public ResponseEntity<Person> partialUpdate(@PathVariable(name = "id") Integer id,
-                                                @RequestBody Person person) {
+    @RequestMapping(method = RequestMethod.PATCH, value = "/{id}",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<Person> patch(@PathVariable(name = "id") Integer id,
+                                        @RequestBody Person personSample) {
 
-        person.setId(id);
-        Status status = personPersistenceService.patch(person);
+        personSample.setId(id);
+        IPersonPersistenceService.Result result = personPersistenceService.patch(personSample);
 
-        HttpStatus httpStatus;
-
-        switch (status) {
+        switch (result.getStatus()) {
             case UPDATED:
-                httpStatus = HttpStatus.OK;
-                break;
+                return new ResponseEntity<>(result.getPerson(), HttpStatus.OK);
+            case NOT_FOUND:
+                return new ResponseEntity<>((Person) null, HttpStatus.NOT_FOUND);
             default:
-                httpStatus = HttpStatus.BAD_REQUEST;
+                return new ResponseEntity<>((Person) null, HttpStatus.BAD_REQUEST);
         }
-
-        return new ResponseEntity<>(person, httpStatus);
     }
-
 }

@@ -4,24 +4,17 @@ import com.ote.test.aop.Counter;
 import com.ote.test.model.Person;
 import com.ote.test.model.PersonParameter;
 import com.ote.test.service.persistence.repository.IPersonRepository;
+import com.ote.test.utils.BeanMerger;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
+import org.apache.commons.beanutils.BeanUtilsBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 import java.util.Optional;
-
-import static org.springframework.data.jpa.domain.Specifications.where;
 
 @Service
 @Transactional(readOnly = true)
@@ -30,6 +23,9 @@ public class PersonPersistenceService implements IPersonPersistenceService {
 
     @Autowired
     private IPersonRepository personRepository;
+
+    @Autowired
+    private BeanMerger beanMerger;
 
     @Override
     public boolean exists(Integer id) {
@@ -54,7 +50,7 @@ public class PersonPersistenceService implements IPersonPersistenceService {
     @Override
     public Optional<Page<Person>> findAll(PersonParameter parameter, Pageable pageRequest) {
 
-        log.info(String.format("####-%d-Find All with parameter %s with pageRequest %s", Counter.nextValue(), parameter.toString(), pageRequest.toString()));
+        log.info(String.format("####-%d-Find All with parameters %s and pageRequest %s", Counter.nextValue(), parameter.toString(), pageRequest.toString()));
 
         Pageable pageable = new PageRequest(pageRequest.getPageNumber(), pageRequest.getPageSize(), parameter.sort());
 
@@ -67,47 +63,53 @@ public class PersonPersistenceService implements IPersonPersistenceService {
 
     @Transactional(readOnly = false)
     @Override
-    public Status createOrUpdate(Optional<Integer> id, Person person) {
-
-        if (id.isPresent() && exists(id.get())) {
-            person.setId(id.get());
-            return update(person);
-        } else {
-            return create(person);
-        }
-    }
-
-    @Transactional(readOnly = false)
-    @Override
-    public Status create(Person person) {
+    public Result create(Person person) {
 
         person.setId(null);
-        Person personResult = personRepository.save(person);
-        BeanUtils.copyProperties(personResult, person);
-        return Status.CREATED;
+        Person result = personRepository.save(person);
+        return new Result(Status.CREATED, result);
     }
 
     @Transactional(readOnly = false)
     @Override
-    public Status update(Person person) {
-
-        personRepository.save(person);
-        return Status.UPDATED;
-    }
-
-    @Transactional(readOnly = false)
-    @Override
-    public Status patch(Person person) {
+    public Result update(Person person) {
 
         if (person.getId() == null) {
-            return Status.NO_IMPACT;
+            return new Result(Status.NO_IMPACT, null);
         }
 
-        Person personResult = personRepository.findOne(person.getId());
-        BeanUtils.copyProperties(person, personResult);
+        if (!exists(person.getId())) {
+            return new Result(Status.NOT_FOUND, null);
+        }
 
-        personRepository.save(personResult);
-        return Status.UPDATED;
+        Person result = personRepository.save(person);
+        return new Result(Status.UPDATED, result);
+    }
+
+    @Transactional(readOnly = false)
+    @Override
+    public Result patch(Person personSample) {
+
+        if (personSample.getId() == null) {
+            return new Result(Status.NO_IMPACT, null);
+        }
+
+        Person person = personRepository.findOne(personSample.getId());
+
+        if (person == null) {
+            return new Result(Status.NOT_FOUND, null);
+        }
+
+        // Copy non null properties from personSample to person
+        try {
+            beanMerger.merge(person, personSample);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return new Result(Status.NO_IMPACT, null);
+        }
+
+        Person result = personRepository.save(person);
+        return new Result(Status.UPDATED, result);
     }
 
     @Transactional(readOnly = false)

@@ -2,6 +2,8 @@ package com.ote.test.service.persistence;
 
 import com.ote.test.model.Person;
 import com.ote.test.model.PersonParameter;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -15,13 +17,11 @@ public interface IPersonPersistenceService {
 
     Optional<Page<Person>> findAll(PersonParameter parameter, Pageable pageRequest);
 
-    Status createOrUpdate(Optional<Integer> id, Person person);
+    Result create(Person person);
 
-    Status create(Person person);
+    Result patch(Person personSample);
 
-    Status patch(Person person);
-
-    Status update(Person person);
+    Result update(Person person);
 
     Status delete(Integer id);
 
@@ -30,6 +30,14 @@ public interface IPersonPersistenceService {
     boolean exists(Integer id);
 
     enum Status {
-        CREATED, UPDATED, DELETED, NO_IMPACT;
+        CREATED, UPDATED, DELETED, NO_IMPACT, NOT_FOUND;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    class Result {
+
+        Status status;
+        Person person;
     }
 }
