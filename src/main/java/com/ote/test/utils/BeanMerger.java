@@ -8,7 +8,7 @@ import java.lang.reflect.InvocationTargetException;
 @Component
 public class BeanMerger {
 
-    public void merge(Object dest, Object source) throws IllegalAccessException, InvocationTargetException {
+    public void mergeNonNullProperties(Object dest, Object source) throws IllegalAccessException, InvocationTargetException {
         new BeanUtilsBean() {
             @Override
             public void copyProperty(Object dest, String name, Object value)

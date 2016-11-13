@@ -1,6 +1,7 @@
 package com.ote.test.model;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -9,39 +10,30 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class PersonParameter {
-
-    private String sortingBy;
-
-    // TODO Add JSon converter to convert to enum
-    private String sortingDirection;
+@NoArgsConstructor
+public class PersonParameter extends Parameter<Person>{
 
     private String firstName;
     private String lastName;
 
-    public Sort sort() {
+    public Sort getSort() {
 
-        Sort.Order orderByPrimaryKeyAsc = new Sort.Order(Sort.Direction.ASC, "id");
+        Sort.Order orderByPrimaryKeyAsc = new Sort.Order(Sort.Direction.ASC, "key.id");
 
         if (sortingBy == null) {
             return new Sort(orderByPrimaryKeyAsc);
         }
 
-        if (sortingDirection == null) {
-            sortingDirection = "ASC";
-        }
+        Sort.Order orderByPropertyAndDirection = new Sort.Order(sortingDirection, sortingBy);
 
-        Sort.Direction direction = Sort.Direction.valueOf(sortingDirection.toUpperCase());
-        Sort.Order orderByPropertyAndDirection = new Sort.Order(direction, sortingBy);
-
-        if ("id".equalsIgnoreCase(sortingBy)){
+        if ("id".equalsIgnoreCase(sortingBy)) {
             return new Sort(orderByPropertyAndDirection);
         }
 
         return new Sort(orderByPropertyAndDirection, orderByPrimaryKeyAsc);
     }
 
-    public Specification<Person> filter() {
+    public Specification<Person> getFilter() {
 
         return (root, criteriaQuery, criteriaBuilder) -> {
 
