@@ -8,8 +8,10 @@ import java.lang.reflect.InvocationTargetException;
 @Component
 public class BeanMerger {
 
-    public void mergeNonNullProperties(Object dest, Object source) throws IllegalAccessException, InvocationTargetException {
+    public void copyNonNullProperties(Object source, Object dest) throws IllegalAccessException, InvocationTargetException {
+        
         new BeanUtilsBean() {
+            
             @Override
             public void copyProperty(Object dest, String name, Object value)
                     throws IllegalAccessException, InvocationTargetException {
@@ -19,6 +21,4 @@ public class BeanMerger {
             }
         }.copyProperties(dest, source);
     }
-
-
 }
