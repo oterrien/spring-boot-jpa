@@ -3,13 +3,10 @@ package com.ote.test.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.HibernateException;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.id.IdentifierGenerator;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -36,7 +33,6 @@ public class Person implements IEntity<Person.Key> {
 
         @Column(name = "ID", nullable = false)
         private Integer id;
-
     }
 
     @Column(name = "FIRST_NAME")
@@ -45,27 +41,27 @@ public class Person implements IEntity<Person.Key> {
     @Column(name = "LAST_NAME")
     private String lastName;
 
-    public static class KeyGenerator implements IdentifierGenerator {
+    @NoArgsConstructor
+    public static class KeyGenerator extends IdentifierGenerator<Person, Person.Key> {
 
         @Override
-        public Serializable generate(SessionImplementor session, Object object) throws HibernateException {
+        protected Class<Person> getEntityClass() {
+            return Person.class;
+        }
 
-            if (!(object instanceof Person)) {
-                return null;
-            }
+        @Override
+        protected Person.Key newKey() {
+            return new Person.Key();
+        }
 
-            Person entity = (Person) object;
-            Person.Key id = entity.getKey();
+        @Override
+        protected boolean isEmpty(Person.Key key) {
+            return key.getId() == null;
+        }
 
-            if (id == null) {
-                id = new Person.Key();
-            }
-
-            if (id.getId() == null) {
-                id.setId(getNextId(session));
-            }
-
-            return id;
+        @Override
+        protected void populateKey(Key key, SessionImplementor session) {
+            key.setId(getNextId(session));
         }
 
         private int getNextId(SessionImplementor session) {
