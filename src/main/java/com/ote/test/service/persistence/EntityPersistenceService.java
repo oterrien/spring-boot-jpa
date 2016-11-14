@@ -37,7 +37,7 @@ public abstract class EntityPersistenceService<TE extends IEntity<TK>, TK extend
     }
 
     @Override
-    public Optional<Page<TE>> findAll(Parameter<TE> parameter, Pageable pageRequest) {
+    public Optional<Page<TE>> findMany(Parameter<TE> parameter, Pageable pageRequest) {
 
         Pageable pageable = new PageRequest(pageRequest.getPageNumber(), pageRequest.getPageSize(), parameter.getSort());
 
@@ -51,7 +51,7 @@ public abstract class EntityPersistenceService<TE extends IEntity<TK>, TK extend
     @Override
     public Result<TE> create(TE entity) {
 
-       // entity.setKey(null);
+        entity.setKey(null);
         TE result = entityRepository.save(entity);
         return new Result<>(Status.CREATED, result);
     }
@@ -69,9 +69,9 @@ public abstract class EntityPersistenceService<TE extends IEntity<TK>, TK extend
             return new Result<>(Status.NOT_FOUND, null);
         }
 
-        // Copy non null properties from personSample to person
+        // Copy non null properties from partialEntity to person
         try {
-            beanMerger.mergeNonNullProperties(entity, partialEntity);
+            beanMerger.copyNonNullProperties(partialEntity, entity);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return new Result<>(Status.NO_IMPACT, null);
