@@ -11,7 +11,7 @@ import java.util.List;
 
 @Data
 @NoArgsConstructor
-public class PersonParameter extends Parameter<Person>{
+public class PersonParameter extends Parameter<Person> {
 
     private String firstName;
     private String lastName;

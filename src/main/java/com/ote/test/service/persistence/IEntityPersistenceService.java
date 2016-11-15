@@ -2,7 +2,6 @@ package com.ote.test.service.persistence;
 
 import com.ote.test.model.IEntity;
 import com.ote.test.model.Parameter;
-import com.ote.test.model.PersonParameter;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.data.domain.Page;
@@ -16,7 +15,7 @@ public interface IEntityPersistenceService<TE extends IEntity<TK>, TK extends IE
 
     Optional<TE> findOne(TK key);
 
-    Optional<Page<TE>> findAll(Parameter<TE> parameter, Pageable pageRequest);
+    Optional<Page<TE>> findMany(Parameter<TE> parameter, Pageable pageRequest);
 
     Result<TE> create(TE entity);
 

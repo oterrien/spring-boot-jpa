@@ -16,15 +16,15 @@ public abstract class EntityController<TE extends IEntity<TK>, TK extends IEntit
 
     protected IEntityPersistenceService<Person, Person.Key> entityPersistenceService;
 
-    protected EntityController(IEntityPersistenceService<Person, Person.Key> entityPersistenceService){
+    protected EntityController(IEntityPersistenceService<Person, Person.Key> entityPersistenceService) {
         this.entityPersistenceService = entityPersistenceService;
     }
 
-    protected ResponseEntity<TE> getOne(Supplier<Optional<TE>> supplier){
+    protected ResponseEntity<TE> getOne(Supplier<Optional<TE>> supplier) {
         return get(supplier);
     }
 
-    protected ResponseEntity<Page<TE>> getMany(Supplier<Optional<Page<TE>>> supplier){
+    protected ResponseEntity<Page<TE>> getMany(Supplier<Optional<Page<TE>>> supplier) {
         return get(supplier);
     }
 

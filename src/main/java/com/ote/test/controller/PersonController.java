@@ -16,9 +16,9 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/persons")
 @Slf4j
-public class PersonController extends EntityController<Person, Person.Key>{
+public class PersonController extends EntityController<Person, Person.Key> {
 
-    public PersonController(@Autowired IEntityPersistenceService<Person, Person.Key> personPersistenceService){
+    public PersonController(@Autowired IEntityPersistenceService<Person, Person.Key> personPersistenceService) {
         super(personPersistenceService);
     }
 

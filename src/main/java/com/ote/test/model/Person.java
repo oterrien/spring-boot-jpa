@@ -1,16 +1,13 @@
 package com.ote.test.model;
 
+import com.ote.test.service.persistence.KeyGenerator;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.annotations.Parameter;
 
 import javax.persistence.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 @Entity
 @Table(name = "PERSON_INFO")
@@ -18,12 +15,19 @@ import java.sql.SQLException;
 @NoArgsConstructor
 public class Person implements IEntity<Person.Key> {
 
-    public static final String GENERATOR_NAME = "seq_id";
-
     @EmbeddedId
-    @GenericGenerator(name = GENERATOR_NAME, strategy = "com.ote.test.model.Person$KeyGenerator")
-    @GeneratedValue(generator = GENERATOR_NAME)
+    @GenericGenerator(name = "Person", strategy = KeyGenerator.NAME, parameters = {
+            @Parameter(name = KeyGenerator.PARAMETER_STRUCTURE_NAME, value = "S_PERSON_INFO"),
+            @Parameter(name = KeyGenerator.PARAMETER_ENTITY_CLASS_NAME, value = "com.ote.test.model.Person")
+    })
+    @GeneratedValue(generator = "Person")
     private Key key;
+
+    @Column(name = "FIRST_NAME")
+    private String firstName;
+
+    @Column(name = "LAST_NAME")
+    private String lastName;
 
     @Embeddable
     @Data
@@ -35,48 +39,18 @@ public class Person implements IEntity<Person.Key> {
         private Integer id;
     }
 
-    @Column(name = "FIRST_NAME")
-    private String firstName;
+    @Override
+    public Person.Key newKey() {
+        return new Key();
+    }
 
-    @Column(name = "LAST_NAME")
-    private String lastName;
+    @Override
+    public boolean isEmpty(Person.Key key) {
+        return (key.getId() == null);
+    }
 
-    @NoArgsConstructor
-    public static class KeyGenerator extends IdentifierGenerator<Person, Person.Key> {
-
-        @Override
-        protected Class<Person> getEntityClass() {
-            return Person.class;
-        }
-
-        @Override
-        protected Person.Key newKey() {
-            return new Person.Key();
-        }
-
-        @Override
-        protected boolean isEmpty(Person.Key key) {
-            return key.getId() == null;
-        }
-
-        @Override
-        protected void populateKey(Key key, SessionImplementor session) {
-            key.setId(getNextId(session));
-        }
-
-        private int getNextId(SessionImplementor session) {
-
-            Connection connection = session.connection();
-            try {
-                PreparedStatement ps = connection.prepareStatement("SELECT S_PERSON_INFO.nextval from dual");
-                ResultSet rs = ps.executeQuery();
-                if (rs.next()) {
-                    return rs.getInt(1);
-                }
-            } catch (SQLException e) {
-                throw new IllegalStateException(e);
-            }
-            throw new IllegalStateException("Can't get id from sequence");
-        }
+    @Override
+    public void populateKey(Person.Key key, Object id) {
+        key.setId((Integer) id);
     }
 }

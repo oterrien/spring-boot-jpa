@@ -9,9 +9,9 @@ import java.lang.reflect.InvocationTargetException;
 public class BeanMerger {
 
     public void copyNonNullProperties(Object source, Object dest) throws IllegalAccessException, InvocationTargetException {
-        
+
         new BeanUtilsBean() {
-            
+
             @Override
             public void copyProperty(Object dest, String name, Object value)
                     throws IllegalAccessException, InvocationTargetException {

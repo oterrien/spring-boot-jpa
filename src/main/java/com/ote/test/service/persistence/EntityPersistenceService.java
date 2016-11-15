@@ -2,8 +2,6 @@ package com.ote.test.service.persistence;
 
 import com.ote.test.model.IEntity;
 import com.ote.test.model.Parameter;
-import com.ote.test.model.Person;
-import com.ote.test.model.PersonParameter;
 import com.ote.test.service.persistence.repository.IEntityRepository;
 import com.ote.test.utils.BeanMerger;
 import lombok.extern.slf4j.Slf4j;
