@@ -11,8 +11,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 @Profile("oracle")
-@Service(IIdGeneratorService.ID_GENERATOR_BEAN_NAME)
-public class OracleIdGeneratorService implements IIdGeneratorService {
+@Service
+public class OracleIdGeneratorService implements IIDGeneratorService {
 
     @Traceable
     public Integer generateId(SessionImplementor session, String structureName) {

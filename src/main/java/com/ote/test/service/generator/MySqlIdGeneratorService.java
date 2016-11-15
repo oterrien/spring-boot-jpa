@@ -12,8 +12,8 @@ import java.sql.SQLException;
 import java.util.UUID;
 
 @Profile("mysql")
-@Service(IIdGeneratorService.ID_GENERATOR_BEAN_NAME)
-public class MySqlIdGeneratorService implements IIdGeneratorService {
+@Service
+public class MySqlIdGeneratorService implements IIDGeneratorService {
 
     @Traceable
     public Integer generateId(SessionImplementor session, String structureName) {

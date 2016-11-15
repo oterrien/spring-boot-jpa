@@ -1,8 +1,7 @@
 package com.ote.test.service.persistence;
 
-import com.ote.test.ApplicationContextProvider;
 import com.ote.test.model.IEntity;
-import com.ote.test.service.generator.IIdGeneratorService;
+import com.ote.test.service.generator.IDGeneratorServiceProvider;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.engine.spi.SessionImplementor;
@@ -52,8 +51,7 @@ public class KeyGenerator implements IdentifierGenerator, Configurable {
     }
 
     private final Integer nextId(SessionImplementor session) {
-        IIdGeneratorService keyGenerator = (IIdGeneratorService) ApplicationContextProvider.getContext().getBean(IIdGeneratorService.ID_GENERATOR_BEAN_NAME);
-        return keyGenerator.generateId(session, structureName);
+        return IDGeneratorServiceProvider.getIdGeneratorService().generateId(session, structureName);
     }
 
     @SuppressWarnings("unchecked")

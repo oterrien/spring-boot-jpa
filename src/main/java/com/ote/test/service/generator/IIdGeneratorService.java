@@ -3,7 +3,7 @@ package com.ote.test.service.generator;
 import org.hibernate.engine.spi.SessionImplementor;
 
 @FunctionalInterface
-public interface IIdGeneratorService {
+public interface IIDGeneratorService {
 
     Integer generateId(SessionImplementor session, String structureName);
 
